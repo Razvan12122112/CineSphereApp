@@ -1,5 +1,6 @@
 "use client";
-
+import { auth } from "@/lib/firebaseConfig";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -37,11 +38,22 @@ const SignUpForm = () => {
     resolver: zodResolver(FormSchema),
     defaultValues: {
       username: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
     },
   });
 
   const onSubmit = (values: z.infer<typeof FormSchema>) => {
-    console.log("form submited");
+    createUserWithEmailAndPassword(auth, values.email, values.password)
+      .then((userCredential) => {
+        // Here, the user has been created, and you can do more stuff!
+        console.log("Signed up successfully!", userCredential.user);
+      })
+      .catch((error) => {
+        // If there was a problem, like the email is already used, it shows up here.
+        console.error("Error signing up:", error);
+      });
   };
 
   return (

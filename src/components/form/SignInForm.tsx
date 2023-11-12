@@ -1,5 +1,8 @@
 "use client";
+import { useRouter } from "next/router";
 
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebaseConfig";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -29,12 +32,32 @@ const SignInForm = () => {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      username: "",
+      email: "",
+      password: "",
     },
   });
 
+  /* const endPoints = {
+    submit: "www.makeRequest.com/submit"
+    register: "www.makeRequest.com/register"
+  }
+
+  const onRegister = (values: z.infer<typeof FormSchema>) => {
+    makeRequest(endPoints.register);
+  };
+
+*/
+
   const onSubmit = (values: z.infer<typeof FormSchema>) => {
-    makeRequest(endPoints.submit);
+    signInWithEmailAndPassword(auth, values.email, values.password)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+      })
+      .catch((error) => {
+        // If there was a problem, like the email is already used, it shows up here.
+        console.error("Error signing in:", error);
+      });
   };
 
   return (
@@ -93,3 +116,7 @@ const SignInForm = () => {
 };
 
 export default SignInForm;
+
+function makeRequest(submit: string) {
+  throw new Error("Function not implemented.");
+}
