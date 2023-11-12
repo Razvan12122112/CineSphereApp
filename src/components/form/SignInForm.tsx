@@ -34,7 +34,7 @@ const SignInForm = () => {
   });
 
   const onSubmit = (values: z.infer<typeof FormSchema>) => {
-    console.log("form submited");
+    makeRequest(endPoints.submit);
   };
 
   return (
