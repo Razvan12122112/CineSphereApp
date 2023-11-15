@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -16,7 +15,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import Link from "next/link";
-import GoogleSignInButton from "../GoogleSignInButton";
 
 const FormSchema = z
   .object({
@@ -47,8 +45,7 @@ const SignUpForm = () => {
   const onSubmit = (values: z.infer<typeof FormSchema>) => {
     createUserWithEmailAndPassword(auth, values.email, values.password)
       .then((userCredential) => {
-        // Here, the user has been created, and you can do more stuff!
-        console.log("Signed up successfully!", userCredential.user);
+        alert("Signed up successfully!");
       })
       .catch((error) => {
         // If there was a problem, like the email is already used, it shows up here.
@@ -130,9 +127,6 @@ const SignUpForm = () => {
           Sign up
         </Button>
       </form>
-      <div className="mt-3">
-        <GoogleSignInButton>Sign up with Google</GoogleSignInButton>
-      </div>
     </Form>
   );
 };
