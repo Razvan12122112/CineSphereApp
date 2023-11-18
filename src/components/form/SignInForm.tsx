@@ -7,6 +7,7 @@ import {
   FacebookAuthProvider,
   signInWithEmailAndPassword,
   signInWithRedirect,
+  onAuthStateChanged,
 } from "firebase/auth";
 
 import { auth } from "@/lib/firebaseConfig";
@@ -26,6 +27,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import Link from "next/link";
 import GoogleSignInButton from "../GoogleSignInButton";
+import { useEffect } from "react";
 
 const FormSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email"),
@@ -50,51 +52,57 @@ const SignInForm = () => {
   const handleGoogleSignIn = () => {
     signInWithPopup(auth, googleProvider)
       .then((result) => {
+        const user = result.user;
         const credential = GoogleAuthProvider.credentialFromResult(result);
 
-        // Check if credential is not null before accessing accessToken
         if (credential) {
           const token = credential.accessToken;
-          // The signed-in user info.
-          const user = result.user;
-          // Use the token and user info as needed
+          console.log(credential);
         } else {
           console.error("No credential available from the result");
         }
       })
       .catch((error) => {
-        // Handle Errors here.
         console.error("Error during Google Sign-In:", error);
-        // Additional error handling
       });
   };
 
   const handleFacebookSignIn = () => {
     signInWithPopup(auth, facebookProvider)
       .then((result) => {
-        // The signed-in user info.
         const user = result.user;
-
-        // This gives you a Facebook Access Token. You can use it to access the Facebook API.
         const credential = FacebookAuthProvider.credentialFromResult(result);
+
         if (credential) {
-          const token = credential.accessToken;
-          // The signed-in user info.
-          const user = result.user;
-          // Use the token and user info as needed
+          const accessToken = credential.accessToken;
         } else {
           console.error("No credential available from the result");
         }
-
-        // IdP data available using getAdditionalUserInfo(result)
-        // ...
       })
       .catch((error) => {
-        // Handle Errors here.
         console.error("Error during Facebook Sign-In:", error);
-        // Additional error handling
       });
   };
+
+  useEffect(() => {
+    const currentUser = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        // User is signed in
+        const uid = user.uid;
+
+        // You can access user properties like uid, displayName, etc., here
+        console.log("User is signed in. UID:", uid);
+        // You can also update your component's state or perform other actions
+      } else {
+        // User is signed out
+        console.log("User is signed out");
+        // Handle the signed-out state as needed
+      }
+    });
+
+    // Clean up the observer when the component unmounts
+    return () => currentUser();
+  }, []);
 
   const onSubmit = (values: z.infer<typeof FormSchema>) => {
     signInWithEmailAndPassword(auth, values.email, values.password)
@@ -108,10 +116,10 @@ const SignInForm = () => {
       });
   };
 
-  const userSignOut = () => {
+  const handleSignOut = () => {
     signOut(auth)
       .then(() => {
-        alert("User signed out successfully");
+        console.log("User signed out successfully");
       })
       .catch((error) => {
         console.error("Error signing out:", error);
@@ -181,7 +189,7 @@ const SignInForm = () => {
         Facebook login
       </Button>
 
-      <Button className="w-full mt-6" type="button" onClick={userSignOut}>
+      <Button className="w-full mt-6" type="button" onClick={handleSignOut}>
         Sign out
       </Button>
     </div>
@@ -189,7 +197,3 @@ const SignInForm = () => {
 };
 
 export default SignInForm;
-
-function makeRequest(submit: string) {
-  throw new Error("Function not implemented.");
-}

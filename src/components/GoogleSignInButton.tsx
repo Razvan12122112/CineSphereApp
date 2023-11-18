@@ -6,9 +6,7 @@ interface GoogleSignInButtonProps {
 }
 
 const GoogleSignInButton: FC<GoogleSignInButtonProps> = ({ children }) => {
-  const loginWithGoogle = () => {
-    console.log = "login with google";
-  };
+  const loginWithGoogle = () => {};
 
   return (
     <Button onClick={loginWithGoogle} className="w-full">
