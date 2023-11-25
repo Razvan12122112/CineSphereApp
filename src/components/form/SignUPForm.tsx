@@ -1,5 +1,5 @@
 "use client";
-import { auth } from "@/lib/firebaseConfig";
+import { auth, db } from "@/lib/firebaseConfig";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { useForm } from "react-hook-form";
 import {
@@ -15,6 +15,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import Link from "next/link";
+import { doc, setDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 const FormSchema = z
   .object({
@@ -42,15 +44,42 @@ const SignUpForm = () => {
     },
   });
 
-  const onSubmit = (values: z.infer<typeof FormSchema>) => {
-    createUserWithEmailAndPassword(auth, values.email, values.password)
-      .then((userCredential) => {
-        alert("Signed up successfully!");
-      })
-      .catch((error) => {
-        // If there was a problem, like the email is already used, it shows up here.
-        console.error("Error signing up:", error);
+  const router = useRouter();
+
+  const onSubmit = async (values: z.infer<typeof FormSchema>) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password
+      );
+
+      // Add the user to Firestore
+      const user = userCredential.user;
+      const userRef = doc(db, "users", user.uid);
+      await setDoc(userRef, {
+        uid: user.uid,
+        displayName: values.username || "",
+        email: user.email || "",
+        // Add any other user details you want to store
       });
+
+      // Reset the form after successful signup
+      form.reset({
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+      });
+
+      console.log("User added to Firestore and signed up successfully");
+
+      // Redirect to the home page
+      router.push("/"); // Adjust the path as per your route settings
+    } catch (error) {
+      // If there was a problem during signup, like the email already being used, it shows up here.
+      console.error("Error signing up:", error);
+    }
   };
 
   return (

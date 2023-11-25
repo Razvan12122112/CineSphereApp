@@ -1,16 +1,15 @@
 "use client";
 
 import {
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
-  signOut,
   FacebookAuthProvider,
-  signInWithEmailAndPassword,
-  signInWithRedirect,
-  onAuthStateChanged,
+  signOut,
 } from "firebase/auth";
 
-import { auth } from "@/lib/firebaseConfig";
+import { auth, db } from "@/lib/firebaseConfig";
 import { useForm } from "react-hook-form";
 import {
   Form,
@@ -27,7 +26,8 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import Link from "next/link";
 import GoogleSignInButton from "../GoogleSignInButton";
-import { useEffect } from "react";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { useRouter } from "next/navigation";
 
 const FormSchema = z.object({
   email: z.string().min(1, "Email is required").email("Invalid email"),
@@ -46,69 +46,75 @@ const SignInForm = () => {
     },
   });
 
-  const googleProvider = new GoogleAuthProvider();
-  const facebookProvider = new FacebookAuthProvider();
-
+  const router = useRouter();
   const handleGoogleSignIn = () => {
+    const googleProvider = new GoogleAuthProvider();
     signInWithPopup(auth, googleProvider)
-      .then((result) => {
+      .then(async (result) => {
         const user = result.user;
-        const credential = GoogleAuthProvider.credentialFromResult(result);
 
-        if (credential) {
-          const token = credential.accessToken;
-          console.log(credential);
+        // Check if the user exists in Firestore
+        const usersRef = collection(db, "users");
+        const q = query(usersRef, where("uid", "==", user.uid));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          // User does not exist, add them to Firestore
+          await addDoc(usersRef, {
+            uid: user.uid,
+            displayName: user.displayName || "",
+            email: user.email || "",
+            photoURL: user.photoURL || "",
+          });
+
+          console.log("User added to Firestore");
         } else {
-          console.error("No credential available from the result");
+          console.log("User already exists in Firestore");
         }
+        router.push("/");
       })
+
       .catch((error) => {
         console.error("Error during Google Sign-In:", error);
       });
   };
 
-  const handleFacebookSignIn = () => {
-    signInWithPopup(auth, facebookProvider)
-      .then((result) => {
-        const user = result.user;
-        const credential = FacebookAuthProvider.credentialFromResult(result);
+  const handleFacebookSignIn = async () => {
+    const provider = new FacebookAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
 
-        if (credential) {
-          const accessToken = credential.accessToken;
-        } else {
-          console.error("No credential available from the result");
-        }
-      })
-      .catch((error) => {
-        console.error("Error during Facebook Sign-In:", error);
-      });
-  };
+      // Check if the user exists in Firestore
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("uid", "==", user.uid));
+      const querySnapshot = await getDocs(q);
 
-  useEffect(() => {
-    const currentUser = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // User is signed in
-        const uid = user.uid;
+      if (querySnapshot.empty) {
+        // User does not exist, add them to Firestore
+        await addDoc(usersRef, {
+          uid: user.uid,
+          displayName: user.displayName || "",
+          email: user.email || "",
+          photoURL: user.photoURL || "",
+        });
 
-        // You can access user properties like uid, displayName, etc., here
-        console.log("User is signed in. UID:", uid);
-        // You can also update your component's state or perform other actions
+        console.log("User added to Firestore");
       } else {
-        // User is signed out
-        console.log("User is signed out");
-        // Handle the signed-out state as needed
+        console.log("User already exists in Firestore");
       }
-    });
-
-    // Clean up the observer when the component unmounts
-    return () => currentUser();
-  }, []);
+      router.push("/");
+    } catch (error) {
+      console.error("Error during Facebook Sign-In:", error);
+    }
+  };
 
   const onSubmit = (values: z.infer<typeof FormSchema>) => {
     signInWithEmailAndPassword(auth, values.email, values.password)
       .then((userCredential) => {
         // Signed in
         const user = userCredential.user;
+        router.push("/");
       })
       .catch((error) => {
         // If there was a problem, like the email is already used, it shows up here.
@@ -181,6 +187,7 @@ const SignInForm = () => {
           </div>
         </div>
       </Form>
+
       <Button
         className="w-full mt-6"
         type="button"
