@@ -1,12 +1,11 @@
 "use client";
-
+import "@/styles/globals.css";
 import {
   signInWithEmailAndPassword,
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
   FacebookAuthProvider,
-  signOut,
 } from "firebase/auth";
 
 import { auth, db } from "@/lib/firebaseConfig";
@@ -122,29 +121,46 @@ const SignInForm = () => {
       });
   };
 
-  const handleSignOut = () => {
-    signOut(auth)
-      .then(() => {
-        console.log("User signed out successfully");
-      })
-      .catch((error) => {
-        console.error("Error signing out:", error);
-      });
-  };
-
   return (
     <div>
+      <Button
+        className="w-full mt-6 rounded-full  hover:border-gray-300 hover:shadow-sm"
+        type="button"
+        onClick={handleGoogleSignIn}
+        variant="outline"
+      >
+        <img src="/google.png" alt="Google" className="mr-2 w-4 h-4" />
+        Sign in with Google
+      </Button>
+      <Button
+        className="w-full mt-4 rounded-full  hover:border-gray-300 hover:shadow-sm"
+        type="button"
+        onClick={handleFacebookSignIn}
+        variant="outline"
+      >
+        <img src="/facebook.png" alt="Facebook" className="mr-2 w-4 h-4" />
+        Sign in with Facebook
+      </Button>
+
+      <div className="mt-6 relative flex items-center">
+        <div className="flex-grow border-t border-gray-300"></div>
+        <span className="mx-1 text-sm text-gray-600 bg-white px-2">
+          or sign in with email
+        </span>
+        <div className="flex-grow border-t border-gray-300"></div>
+      </div>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
-          <div className="space-y-2">
+          <div className="space-y-2 mt-4 mx-2">
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="mail@example.com" {...field} />
+                  <FormControl className="focus-visible:ring-offset-0  focus-visible:ring-1 hover:ring-1 focus-visible:ring-blue-500">
+                    <Input placeholder="" {...field} />
                   </FormControl>
 
                   <FormMessage />
@@ -156,13 +172,9 @@ const SignInForm = () => {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter your password"
-                      type="password"
-                      {...field}
-                    />
+                  <FormLabel> Password</FormLabel>
+                  <FormControl className="focus-visible:ring-offset-0  focus-visible:ring-1 hover:ring-1 focus-visible:ring-blue-500">
+                    <Input placeholder="" type="password" {...field} />
                   </FormControl>
 
                   <FormMessage />
@@ -171,34 +183,19 @@ const SignInForm = () => {
             />
           </div>
 
-          <Button className="w-full mt-6" type="submit">
+          <Button className="custom-button" type="submit">
             Sign in
           </Button>
         </form>
         <div>
-          <p className="mt-1 w-full">
-            If you don't have an account please{" "}
+          <p className="mt-4 w-full text-sm text-center">
+            Don't have an account?{" "}
             <Link className="text-blue-500 hover:underline" href="/sign-up">
               Sign up
             </Link>
           </p>
-          <div onClick={handleGoogleSignIn}>
-            <GoogleSignInButton>Sign in with Google</GoogleSignInButton>
-          </div>
         </div>
       </Form>
-
-      <Button
-        className="w-full mt-6"
-        type="button"
-        onClick={handleFacebookSignIn}
-      >
-        Facebook login
-      </Button>
-
-      <Button className="w-full mt-6" type="button" onClick={handleSignOut}>
-        Sign out
-      </Button>
     </div>
   );
 };
