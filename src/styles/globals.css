@@ -74,3 +74,11 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  .custom-button {
+    @apply w-full mt-6 rounded-full;
+    
+  }
+
+}
