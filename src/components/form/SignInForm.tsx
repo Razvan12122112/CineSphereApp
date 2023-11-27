@@ -8,7 +8,7 @@ import {
   FacebookAuthProvider,
 } from "firebase/auth";
 
-import { auth, db } from "@/lib/firebaseConfig";
+import { auth, db } from "@/lib/firebase/firebaseConfig";
 import { useForm } from "react-hook-form";
 import {
   Form,

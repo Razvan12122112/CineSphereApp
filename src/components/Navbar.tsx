@@ -4,7 +4,7 @@ import Link from "next/link";
 import { buttonVariants } from "./ui/button";
 
 import { useEffect, useState } from "react";
-import { auth } from "@/lib/firebaseConfig";
+import { auth } from "@/lib/firebase/firebaseConfig";
 import firebase from "firebase/compat/app";
 
 function Navbar() {

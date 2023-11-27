@@ -1,5 +1,5 @@
 "use client";
-import { auth, db } from "@/lib/firebaseConfig";
+import { auth, db } from "@/lib/firebase/firebaseConfig";
 import {
   getAuth,
   createUserWithEmailAndPassword,
